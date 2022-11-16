@@ -16,20 +16,23 @@
         android:layout_height = "wrap_content"
         android:layout_below = "@+id/tvIP"
         android:textAppearance = "@style/Base.TextAppearance.AppCompat.Medium" />
+
     <TextView
-        android:id = "@+id/tvConnectionStatus"
-        android:layout_width = "match_parent"
-        android:layout_height = "wrap_content"
-        android:layout_below = "@+id/tvPort"
-        android:textAppearance = "@style/Base.TextAppearance.AppCompat.Medium" />
+        android:id="@+id/tvConnectionStatus"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tvPort"
+        android:layout_marginTop="0dp"
+        android:textAppearance="@style/Base.TextAppearance.AppCompat.Medium" />
+
     <TextView
-        android:id = "@+id/tvMessages"
-        android:layout_width = "match_parent"
-        android:layout_height = "wrap_content"
-        android:layout_above = "@+id/etMessage"
-        android:layout_below = "@+id/tvConnectionStatus"
-        android:inputType = "textMultiLine"
-        android:textAppearance = "@style/Base.TextAppearance.AppCompat.Medium" />
+        android:id="@+id/tvMessages"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/etMessage"
+        android:layout_alignTop="@+id/tvConnectionStatus"
+        android:inputType="textMultiLine"
+        android:textAppearance="@style/Base.TextAppearance.AppCompat.Medium" />
     <EditText
         android:id = "@+id/etMessage"
         android:layout_width = "match_parent"

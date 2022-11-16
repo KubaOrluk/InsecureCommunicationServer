@@ -30,6 +30,8 @@ public class MainActivity extends AppCompatActivity {
     public static String SERVER_IP = "";
     public static final int SERVER_PORT = 8600;
     String message;
+    String user;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,6 +41,10 @@ public class MainActivity extends AppCompatActivity {
         tvMessages = findViewById(R.id.tvMessages);
         etMessage = findViewById(R.id.etMessage);
         btnSend = findViewById(R.id.btnSend);
+
+        etMessage.setVisibility(View.GONE);
+        btnSend.setVisibility(View.GONE);
+
         try {
             SERVER_IP = getLocalIpAddress();
         } catch (UnknownHostException e) {
@@ -83,13 +89,16 @@ public class MainActivity extends AppCompatActivity {
                     socket = serverSocket.accept();
                     output = new PrintWriter(socket.getOutputStream());
                     input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                    final String user = input.readLine();
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            tvMessages.setText("Connected");
+                            tvMessages.setText("Connected\n");
+                            etMessage.setVisibility(View.VISIBLE);
+                            btnSend.setVisibility(View.VISIBLE);
                         }
                     });
-                    new Thread(new Thread2()).start();
+                    new Thread(new Thread2(user)).start();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -99,6 +108,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
     private class Thread2 implements Runnable {
+        private String user;
+        Thread2(String user) {
+            this.user = user;
+        }
         @Override
         public void run() {
             while (true) {
@@ -108,7 +121,7 @@ public class MainActivity extends AppCompatActivity {
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                tvMessages.append("\nclient: " + message + " ");
+                                tvMessages.append("\n" + user + ": " + message + " ");
                             }
                         });
                     } else {
@@ -135,7 +148,7 @@ public class MainActivity extends AppCompatActivity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    tvMessages.append("\nserver: " + message + " ");
+                    tvMessages.append("\nServer: " + message + " ");
                             etMessage.setText("");
                 }
             });

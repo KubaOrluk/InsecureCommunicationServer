@@ -1,5 +1,6 @@
 package com.example.insecurecommunicationserver;
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
@@ -19,6 +20,8 @@ import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
+import javax.net.ssl.SSLServerSocket;
+
 @SuppressLint("SetTextI18n")
 public class MainActivity extends AppCompatActivity {
     ServerSocket serverSocket;
@@ -29,12 +32,27 @@ public class MainActivity extends AppCompatActivity {
     Button btnSend;
     public static String SERVER_IP = "";
     public static final int SERVER_PORT = 8600;
+
+    private static final String TLS_VERSION = "TLSv1.2";
+    private static final int SERVER_COUNT = 1;
+    private static final String SERVER_HOST_NAME = "127.0.0.1";
+    private static final String TRUST_STORE_NAME = "servercert.p12";
+    private static final char[] TRUST_STORE_PWD = new char[] {'a', 'b', 'c', '1', '2', '3'};
+    private static final String KEY_STORE_NAME = "servercert.p12";
+    private static final char[] KEY_STORE_PWD = new char[] {'a', 'b', 'c', '1', '2', '3'};
     String message;
     String user;
+
+    private static Context context;
+
+    public static Context getAppContext() {
+        return MainActivity.context;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        MainActivity.context = getApplication().getApplicationContext();
         setContentView(R.layout.activity_main);
         tvIP = findViewById(R.id.tvIP);
         tvPort = findViewById(R.id.tvPort);
@@ -74,21 +92,35 @@ public class MainActivity extends AppCompatActivity {
     class Thread1 implements Runnable {
         @Override
         public void run() {
+            TLSServer server = new TLSServer();
+            System.setProperty("javax.net.debug", "ssl"); //TODO: remove
+
+            SSLServerSocket sslServerSocket;
             Socket socket;
             try {
-                serverSocket = new ServerSocket(SERVER_PORT);
+                sslServerSocket = server.serve(SERVER_PORT, TLS_VERSION, TRUST_STORE_NAME,
+                        TRUST_STORE_PWD, KEY_STORE_NAME, KEY_STORE_PWD);
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        tvMessages.setText("Not connected");
+                        if(sslServerSocket==null)
+                            tvMessages.setText("Server socket is NULL");
+                        else
+                            tvMessages.setText("Not connected");
+
                         tvIP.setText("IP: " + SERVER_IP);
                         tvPort.setText("Port: " + String.valueOf(SERVER_PORT));
                     }
                 });
-                try {
-                    socket = serverSocket.accept();
-                    output = new PrintWriter(socket.getOutputStream());
-                    input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                Socket sslSocket;
+                while (true) {
+                    try {
+                        sslSocket = sslServerSocket.accept();
+                        output = new PrintWriter(sslSocket.getOutputStream()); //TODO: maybe add autoFLush: true
+                        input = new BufferedReader(new InputStreamReader(sslSocket.getInputStream()));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                     final String user = input.readLine();
                     runOnUiThread(new Runnable() {
                         @Override
@@ -99,10 +131,10 @@ public class MainActivity extends AppCompatActivity {
                         }
                     });
                     new Thread(new Thread2(user)).start();
-                } catch (IOException e) {
-                    e.printStackTrace();
                 }
             } catch (IOException e) {
+                e.printStackTrace();
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }

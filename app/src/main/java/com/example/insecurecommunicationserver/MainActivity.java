@@ -1,5 +1,6 @@
 package com.example.insecurecommunicationserver;
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
@@ -19,26 +20,47 @@ import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
+import javax.net.ssl.SSLServerSocket;
+
 @SuppressLint("SetTextI18n")
 public class MainActivity extends AppCompatActivity {
     ServerSocket serverSocket;
     Thread Thread1 = null;
-    TextView tvIP, tvPort;
+    TextView tvIP, tvPort, tvConnectionStatus, encryptionPass;
     TextView tvMessages;
     EditText etMessage;
     Button btnSend;
     public static String SERVER_IP = "";
     public static final int SERVER_PORT = 8600;
+
+    private static final String TLS_VERSION = "TLSv1.2";
+    private static final int SERVER_COUNT = 1;
+    private static final String SERVER_HOST_NAME = "127.0.0.1";
+    private static final String TRUST_STORE_NAME = "servercert.p12";
+    private static final char[] TRUST_STORE_PWD = new char[] {'a', 'b', 'c', '1', '2', '3'};
+    private static final String KEY_STORE_NAME = "servercert.p12";
+    private static final char[] KEY_STORE_PWD = new char[] {'a', 'b', 'c', '1', '2', '3'};
     String message;
     String user;
+    EncryptData encryptData;
+
+    private static Context context;
+
+    public static Context getAppContext() {
+        return MainActivity.context;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        MainActivity.context = getApplication().getApplicationContext();
+        encryptData = new EncryptData();
         setContentView(R.layout.activity_main);
         tvIP = findViewById(R.id.tvIP);
         tvPort = findViewById(R.id.tvPort);
         tvMessages = findViewById(R.id.tvMessages);
+        tvConnectionStatus = findViewById(R.id.tvConnectionStatus);
+        encryptionPass = findViewById(R.id.encryptionPass);
         etMessage = findViewById(R.id.etMessage);
         btnSend = findViewById(R.id.btnSend);
 
@@ -74,35 +96,52 @@ public class MainActivity extends AppCompatActivity {
     class Thread1 implements Runnable {
         @Override
         public void run() {
+            TLSServer server = new TLSServer();
+            System.setProperty("javax.net.debug", "ssl"); //TODO: remove
+
+            SSLServerSocket sslServerSocket;
             Socket socket;
             try {
-                serverSocket = new ServerSocket(SERVER_PORT);
+                sslServerSocket = server.serve(SERVER_PORT, TLS_VERSION, TRUST_STORE_NAME,
+                        TRUST_STORE_PWD, KEY_STORE_NAME, KEY_STORE_PWD);
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        tvMessages.setText("Not connected");
+                        if(sslServerSocket==null)
+                            tvConnectionStatus.setText("Server socket is NULL");
+                        else
+                            tvConnectionStatus.setText("Not connected");
+
                         tvIP.setText("IP: " + SERVER_IP);
                         tvPort.setText("Port: " + String.valueOf(SERVER_PORT));
                     }
                 });
-                try {
-                    socket = serverSocket.accept();
-                    output = new PrintWriter(socket.getOutputStream());
-                    input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                    final String user = input.readLine();
+                Socket sslSocket = null;
+                encryptData.setSecretKeyFromString(encryptionPass.getText().toString().trim());
+                while (true) {
+                    try {
+                        sslSocket = sslServerSocket.accept();
+                        output = new PrintWriter(sslSocket.getOutputStream(), true);
+                        input = new BufferedReader(new InputStreamReader(sslSocket.getInputStream()));
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    String inp = input.readLine();
+                    final String user = encryptData.decryptFromRec(inp);
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            tvMessages.setText("Connected\n");
+                            tvConnectionStatus.setText("Connected");
+                            encryptionPass.setVisibility(View.GONE);
                             etMessage.setVisibility(View.VISIBLE);
                             btnSend.setVisibility(View.VISIBLE);
                         }
                     });
                     new Thread(new Thread2(user)).start();
-                } catch (IOException e) {
-                    e.printStackTrace();
                 }
             } catch (IOException e) {
+                e.printStackTrace();
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
@@ -116,7 +155,8 @@ public class MainActivity extends AppCompatActivity {
         public void run() {
             while (true) {
                 try {
-                    final String message = input.readLine();
+                    String inp = input.readLine();
+                    final String message = encryptData.decryptFromRec(inp);
                     if (message != null) {
                         runOnUiThread(new Runnable() {
                             @Override
@@ -142,8 +182,8 @@ public class MainActivity extends AppCompatActivity {
         }
         @Override
         public void run() {
-            output.write(message);
-            output.write("\n");
+            //output.write(message+"\n");
+            output.write(encryptData.encryptToSend(message)+"\n");
             output.flush();
             runOnUiThread(new Runnable() {
                 @Override

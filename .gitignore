@@ -13,3 +13,9 @@
 .externalNativeBuild
 .cxx
 local.properties
+/app/src/main/res/servercert.p12
+/app/src/main/res/raw/servercert.p12
+/app/assets/servercert.p12
+/app/src/main/assets/servercert.p12
+/app/src/main/assets/servercert.bks
+/assets/servercert.p12

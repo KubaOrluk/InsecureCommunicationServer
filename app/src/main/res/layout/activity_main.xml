@@ -5,17 +5,28 @@
     android:layout_height = "match_parent"
     android:layout_margin = "16dp"
     tools:context = ".MainActivity">
+
+    <EditText
+        android:id="@+id/encryptionPass"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tvConnectionStatus"
+        android:hint="Encryption password"
+        android:inputType="text"
+        android:text="5trongP@55" />
+
     <TextView
-        android:id = "@+id/tvIP"
-        android:layout_width = "wrap_content"
-        android:layout_height = "wrap_content"
-        android:textAppearance = "@style/Base.TextAppearance.AppCompat.Medium" />
+        android:id="@+id/tvIP"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="@style/Base.TextAppearance.AppCompat.Medium" />
+
     <TextView
-        android:id = "@+id/tvPort"
-        android:layout_width = "wrap_content"
-        android:layout_height = "wrap_content"
-        android:layout_below = "@+id/tvIP"
-        android:textAppearance = "@style/Base.TextAppearance.AppCompat.Medium" />
+        android:id="@+id/tvPort"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tvIP"
+        android:textAppearance="@style/Base.TextAppearance.AppCompat.Medium" />
 
     <TextView
         android:id="@+id/tvConnectionStatus"
@@ -30,7 +41,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_above="@+id/etMessage"
-        android:layout_alignTop="@+id/tvConnectionStatus"
+        android:layout_alignTop="@id/encryptionPass"
         android:inputType="textMultiLine"
         android:textAppearance="@style/Base.TextAppearance.AppCompat.Medium" />
     <EditText
@@ -46,4 +57,5 @@
         android:layout_height = "wrap_content"
         android:layout_alignParentBottom = "true"
         android:text = "SEND" />
+
 </RelativeLayout>

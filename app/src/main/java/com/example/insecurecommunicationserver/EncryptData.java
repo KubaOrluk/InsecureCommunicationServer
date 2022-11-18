@@ -61,7 +61,7 @@ public class EncryptData {
     }
 
     private byte[] encrypt(byte[] plaintext, byte[] IV) throws Exception {
-        Cipher cipher = Cipher.getInstance("AES");
+        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
         SecretKeySpec keySpec = new SecretKeySpec(secretKey.getEncoded(), "AES");
         IvParameterSpec ivSpec = new IvParameterSpec(IV);
         cipher.init(Cipher.ENCRYPT_MODE, keySpec, ivSpec);
@@ -71,7 +71,7 @@ public class EncryptData {
 
     private String decrypt(byte[] cipherText, byte[] IV) {
         try {
-            Cipher cipher = Cipher.getInstance("AES");
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
             SecretKeySpec keySpec = new SecretKeySpec(secretKey.getEncoded(), "AES");
             IvParameterSpec ivSpec = new IvParameterSpec(IV);
             cipher.init(Cipher.DECRYPT_MODE, keySpec, ivSpec);
@@ -91,7 +91,7 @@ public class EncryptData {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return Base64.encodeToString(IV, Base64.NO_WRAP)+"$"+Base64.encodeToString(cipherText, Base64.NO_WRAP);
+        return Base64.encodeToString(IV, Base64.NO_WRAP)+'$'+Base64.encodeToString(cipherText, Base64.NO_WRAP);
     }
 
     public String decryptFromRec(String recMsg) {
@@ -111,14 +111,4 @@ public class EncryptData {
         }
         return plainText;
     }
-
-    /*
-    // Sending side
-byte[] data = text.getBytes("UTF-8");
-String base64 = Base64.encodeToString(data, Base64.DEFAULT);
-
-// Receiving side
-byte[] data = Base64.decode(base64, Base64.DEFAULT);
-String text = new String(data, "UTF-8");
-     */
 }

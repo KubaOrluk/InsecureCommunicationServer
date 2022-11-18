@@ -23,6 +23,7 @@ import javax.net.ssl.TrustManagerFactory;
 /*
  * Create cert and copy to app\src\main\assets (or just assets)
  * keytool -genkeypair -alias server -keyalg EC -sigalg SHA384withECDSA -keysize 256 -keystore servercert.p12 -storetype pkcs12 -v -storepass abc123 -validity 10000 -ext san=ip:10.0.2.2,ip:10.0.2.16,ip:127.0.0.1
+ * keytool -genkeypair -alias client -keyalg EC -sigalg SHA384withECDSA -keysize 256 -keystore clientcert.p12 -storetype pkcs12 -v -storepass 321cba -validity 10000 -ext san=ip:10.0.2.2,ip:10.0.2.16,ip:127.0.0.1
  */
 
 public class TLSServer {

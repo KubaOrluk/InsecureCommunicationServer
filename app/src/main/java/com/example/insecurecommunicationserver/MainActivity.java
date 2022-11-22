@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String TLS_VERSION = "TLSv1.2";
     private static final int SERVER_COUNT = 1;
     private static final String SERVER_HOST_NAME = "127.0.0.1";
-    private static final String TRUST_STORE_NAME = "clientcert.p12";
+    private static final String TRUST_STORE_NAME = "servercert.p12";
     //private static final char[] TRUST_STORE_PWD = new char[] {'a', 'b', 'c', '1', '2', '3'};
     private static final char[] TRUST_STORE_PWD = "abc123".toCharArray();
     private static final String KEY_STORE_NAME = "servercert.p12";

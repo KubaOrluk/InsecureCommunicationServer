@@ -165,8 +165,8 @@ public class MainActivity extends AppCompatActivity {
                             }
                         });
                     } else {
-                        Thread1 = new Thread(new Thread1());
-                        Thread1.start();
+                        //Thread1 = new Thread(new Thread1());
+                        //Thread1.start();
                         return;
                     }
                 } catch (IOException e) {
